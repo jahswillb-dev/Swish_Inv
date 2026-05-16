@@ -512,7 +512,7 @@
     function renderDocumentModal(doc) {
       return [
         '<div class="modal-backdrop" data-action="close-modal">',
-        '<article class="modal-card" role="dialog" aria-modal="true" onclick="event.stopPropagation()">',
+        '<article class="modal-card" role="dialog" aria-modal="true">',
         '<div class="panel-header">',
         '<div><h2 class="panel-title">' + escapeHtml(doc.documentNumber) + '</h2><div class="small">' + escapeHtml(doc.clientName) + ' Â· ' + escapeHtml(doc.projectTitle) + '</div></div>',
         '<div class="topbar-actions">',
@@ -1052,6 +1052,7 @@
       }
 
       if (action === 'close-modal') {
+        if (trigger.classList.contains('modal-backdrop') && event.target !== trigger) return;
         state.viewDocument = null;
         render();
       }

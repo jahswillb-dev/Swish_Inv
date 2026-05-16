@@ -591,8 +591,9 @@
 
     function renderQuotationPrint(doc) {
       var items = doc.items || [];
+      var denseClass = items.length > 8 ? ' print-dense' : '';
       return [
-        '<main class="print-page quote-print">',
+        '<main class="print-page quote-print' + denseClass + '">',
         '<aside class="quote-rail">',
         printLogo('quote-logo'),
         '<section class="quote-rail-section bill"><h2>BILL TO:</h2><strong>' + escapeHtml(doc.clientName) + '</strong>',
@@ -634,9 +635,10 @@
       var items = doc.items || [];
       var paid = String(doc.status || '').toLowerCase() === 'paid' ? Number(doc.total || 0) : 0;
       var balance = Math.max(0, Number(doc.total || 0) - paid);
+      var denseClass = items.length > 8 ? ' print-dense' : '';
 
       return [
-        '<main class="print-page invoice-print">',
+        '<main class="print-page invoice-print' + denseClass + '">',
         '<div class="invoice-band"></div>',
         '<header class="invoice-head">',
         printLogo('invoice-logo'),
@@ -690,7 +692,55 @@
 
     function printStyles() {
       return [
-        '@page{size:A4;margin:0}#swishPrintMount{display:none}#swishPrintMount *{box-sizing:border-box}#swishPrintMount{background:#fff;color:#080a0b;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:0}.print-page{width:210mm;min-height:297mm;margin:0 auto;background:#fff;position:relative}.quote-print{display:grid;grid-template-columns:46mm 1fr;padding:12mm 7mm 12mm 14mm}.quote-rail{background:#000;color:#fff;min-height:262mm;padding:10mm 3mm;display:flex;flex-direction:column}.quote-logo{width:36mm;height:28mm;object-fit:cover;margin:0 auto 38mm}.quote-rail-section{display:grid;gap:3mm;margin-bottom:26mm}.quote-rail-section h2{font-size:11px;margin:0;color:#fff}.quote-rail-section span,.quote-rail-section strong{color:#9e9e9e;font-weight:400}.quote-socials{margin-top:auto;color:#8d8d8d;font-size:8px;line-height:1.4}.quote-sheet{padding-left:1mm;position:relative}.quote-company{margin:4mm 0 17mm 0;display:grid;gap:1mm}.quote-company span{display:block}.quote-sheet h1{font-size:34px;line-height:1;margin:0 0 30mm;font-weight:900;letter-spacing:.5px}.quote-meta{display:grid;grid-template-columns:32mm 1fr;gap:8mm 16mm;margin:0 0 15mm}.quote-meta dt{font-weight:800}.quote-meta dd{margin:0;max-width:95mm}.quote-table,.invoice-table{width:100%;border-collapse:collapse}.quote-table th{font-size:11px;text-align:left;border-bottom:2px solid #000;padding:0 0 1mm}.quote-table th:nth-child(n+2),.quote-table td:nth-child(n+2){text-align:right}.quote-table td{height:12mm;border-bottom:1px solid #666;padding:2mm 0;vertical-align:top}.quote-table td:first-child{width:62%}.quote-table strong{font-weight:900}.quote-totals{width:44mm;margin:48mm 0 0 auto}.total-row{display:flex;justify-content:space-between;gap:7mm;margin:1.5mm 0}.total-row.grand{border-top:2px solid #000;padding-top:1.5mm;font-weight:800}.invoice-print{padding:13mm 38mm}.invoice-band,.invoice-footer-band{height:3mm;background:#6ea5df}.invoice-head{display:grid;grid-template-columns:22mm 1fr 57mm;gap:8mm;padding:5mm 7mm 13mm;background:#f2f2f2}.invoice-logo{width:18mm;height:18mm;object-fit:cover}.invoice-head section{display:grid;align-content:start;gap:1mm}.invoice-company{text-align:left}.invoice-info{display:grid;grid-template-columns:1fr 58mm;gap:18mm;padding:10mm 27mm 11mm}.invoice-info p{margin:2mm 0}.invoice-table thead{background:#6d99e8;color:#fff}.invoice-table th{font-weight:400;text-align:left;padding:2mm 28mm}.invoice-table th:last-child,.invoice-table td:last-child{text-align:right}.invoice-table td{padding:3mm 28mm;vertical-align:top}.invoice-totals{width:55mm;margin:9mm 7mm 0 auto;font-weight:700}.invoice-notes{margin:15mm 27mm 0}.invoice-notes p{min-height:12mm}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:28mm;margin:12mm 27mm 15mm}.signatures span{display:block;height:10mm;border-bottom:1px solid transparent}.signatures p{margin:1mm 0}.invoice-footer-band{position:absolute;left:38mm;right:38mm;bottom:16mm;background:linear-gradient(90deg,#6ea5df 0 17%,#6d99e8 17% 100%)}@media print{body.swish-printing > :not(#swishPrintMount){display:none!important}body.swish-printing{background:#fff!important;margin:0!important}body.swish-printing #swishPrintMount{display:block!important}.print-page{box-shadow:none;margin:0}}'
+        '@page{size:A4 portrait;margin:10mm}',
+        '#swishPrintMount{display:none}',
+        '#swishPrintMount,#swishPrintMount *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
+        '#swishPrintMount{background:#fff;color:#080a0b;font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:1.25;letter-spacing:0}',
+        '.print-page{width:190mm;height:277mm;margin:0 auto;background:#fff;position:relative;overflow:hidden}',
+        '.quote-print{display:grid;grid-template-columns:43mm 1fr;padding:0}',
+        '.quote-rail{background:#000;color:#fff;height:277mm;padding:9mm 3mm 5mm;display:flex;flex-direction:column}',
+        '.quote-logo{width:29mm;height:29mm;object-fit:cover;margin:0 auto 36mm}',
+        '.quote-rail-section{display:grid;gap:2.4mm;margin-bottom:22mm}',
+        '.quote-rail-section.bill{min-height:47mm}',
+        '.quote-rail-section.payment{margin-bottom:10mm}',
+        '.quote-rail-section h2{font-size:10px;line-height:1;margin:0;color:#fff;font-weight:800}',
+        '.quote-rail-section span,.quote-rail-section strong{display:block;color:#a8a8a8;font-weight:400;word-break:break-word}',
+        '.quote-socials{margin-top:auto;color:#8d8d8d;font-size:7.5px;line-height:1.4}',
+        '.quote-sheet{height:277mm;padding:6mm 0 7mm 7mm;position:relative}',
+        '.quote-company{display:grid;gap:.8mm;margin:0 0 20mm}',
+        '.quote-company span{display:block}',
+        '.quote-company strong{font-weight:500}',
+        '.quote-sheet h1{font-size:31px;line-height:1;margin:0 0 22mm;font-weight:900}',
+        '.quote-meta{display:grid;grid-template-columns:29mm 1fr;gap:6.5mm 15mm;margin:0 0 12mm}',
+        '.quote-meta dt{font-weight:900}',
+        '.quote-meta dd{margin:0;max-width:102mm;text-transform:uppercase}',
+        '.quote-table,.invoice-table{width:100%;border-collapse:collapse;table-layout:fixed}',
+        '.quote-table th{font-size:9.5px;text-align:left;border-bottom:2px solid #000;padding:0 0 1.5mm;font-weight:900}',
+        '.quote-table th:nth-child(1){width:62%}.quote-table th:nth-child(2){width:9%}.quote-table th:nth-child(3){width:14%}.quote-table th:nth-child(4){width:15%}',
+        '.quote-table th:nth-child(n+2),.quote-table td:nth-child(n+2){text-align:right}',
+        '.quote-table td{height:10.5mm;border-bottom:1px solid #737373;padding:2mm 0 1.6mm;vertical-align:top}',
+        '.quote-table strong{font-weight:900}.quote-table span{font-size:8.5px;color:#333}',
+        '.quote-totals{position:absolute;right:0;bottom:11mm;width:43mm;font-size:9px}',
+        '.total-row{display:flex;justify-content:space-between;gap:5mm;margin:1.4mm 0;white-space:nowrap}',
+        '.total-row.grand{border-top:2px solid #000;padding-top:1.4mm;font-weight:900}',
+        '.invoice-print{padding:0}',
+        '.invoice-band,.invoice-footer-band{height:3mm;background:#69a6df}',
+        '.invoice-head{display:grid;grid-template-columns:20mm 1fr 56mm;gap:8mm;padding:5mm 26mm 11mm;background:#f1f1f1}',
+        '.invoice-logo{width:18mm;height:18mm;object-fit:cover}',
+        '.invoice-head section{display:grid;align-content:start;gap:.8mm}.invoice-head strong{font-weight:500}.invoice-company{text-align:left}',
+        '.invoice-info{display:grid;grid-template-columns:1fr 57mm;gap:18mm;padding:10mm 26mm 10mm}',
+        '.invoice-info strong{font-size:10px}.invoice-info p{margin:1.6mm 0}',
+        '.invoice-table thead{background:#6d99e8;color:#fff}',
+        '.invoice-table th{font-weight:400;text-align:left;padding:2mm 26mm}.invoice-table th:last-child,.invoice-table td:last-child{text-align:right}',
+        '.invoice-table td{padding:3mm 26mm;vertical-align:top}.invoice-table td:first-child{width:72%}',
+        '.invoice-totals{width:56mm;margin:8mm 26mm 0 auto;font-weight:700}',
+        '.invoice-notes{margin:14mm 26mm 0}.invoice-notes p{min-height:12mm;margin:3mm 0 0}',
+        '.signatures{display:grid;grid-template-columns:1fr 1fr;gap:33mm;margin:12mm 26mm 16mm}',
+        '.signatures span{display:block;height:10mm;border-bottom:1px solid transparent}.signatures p{margin:1mm 0}',
+        '.invoice-footer-band{position:absolute;left:26mm;right:26mm;bottom:8mm;background:linear-gradient(90deg,#69a6df 0 17%,#6d99e8 17% 100%)}',
+        '.print-dense{font-size:8.8px}.print-dense .quote-table td{height:8.7mm;padding:1.4mm 0}.print-dense .quote-sheet h1{margin-bottom:16mm}.print-dense .quote-meta{margin-bottom:9mm}.print-dense .invoice-table td{padding-top:2mm;padding-bottom:2mm}',
+        '@media screen{#swishPrintMount{position:fixed;inset:0;z-index:-1;opacity:0;pointer-events:none}}',
+        '@media print{html,body{width:210mm;min-height:297mm}body.swish-printing > :not(#swishPrintMount){display:none!important}body.swish-printing{background:#fff!important;margin:0!important}body.swish-printing #swishPrintMount{display:block!important;width:190mm;margin:0}.print-page{box-shadow:none;margin:0;break-after:page;page-break-after:always}.print-page:last-child{break-after:auto;page-break-after:auto}}'
       ].join('');
     }
 

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Swish Innovation Desk</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./config.js"></script>
+    <script src="./brand.js"></script>
+    <script>
+      if (window.SWISH_FAVICON_DATA_URI) {
+        var favicon = document.createElement('link');
+        favicon.rel = 'icon';
+        favicon.type = 'image/png';
+        favicon.href = window.SWISH_FAVICON_DATA_URI;
+        document.head.appendChild(favicon);
+      }
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body>
+    <div id="app" class="boot-screen">
+      <div class="boot-mark"><img id="bootLogo" alt="Swish Innovation"></div>
+      <div>Preparing workspace</div>
+    </div>
+    <script>
+      if (window.SWISH_LOGO_DATA_URI) {
+        document.getElementById('bootLogo').src = window.SWISH_LOGO_DATA_URI;
+      }
+    </script>
+    <script src="./app.js"></script>
+  </body>
+</html>

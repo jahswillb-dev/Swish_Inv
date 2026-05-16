@@ -50,97 +50,76 @@
       users: { label: 'Users', icon: 'users-round' }
     };
 
-    var bridge = createBridge(window.SWISH_BACKEND_URL);
-
     function api(functionName) {
       var args = Array.prototype.slice.call(arguments, 1);
-      return bridge.call(functionName, args);
+      return postToBackend(functionName, args);
     }
 
-    function createBridge(url) {
-      var iframe = null;
-      var readyPromise = null;
-      var readyResolve = null;
-      var readyReject = null;
-      var pending = {};
-      var counter = 0;
-
-      function validUrl() {
-        return url && url.indexOf('PASTE_APPS_SCRIPT_WEB_APP_URL_HERE') === -1;
+    function postToBackend(method, args) {
+      var backendUrl = window.SWISH_BACKEND_URL || '';
+      if (!backendUrl || backendUrl.indexOf('PASTE_APPS_SCRIPT_WEB_APP_URL_HERE') !== -1) {
+        return Promise.reject(new Error('Set SWISH_BACKEND_URL in frontend/config.js after deploying the Apps Script backend.'));
       }
 
-      function ensureReady() {
-        if (!validUrl()) {
-          return Promise.reject(new Error('Set SWISH_BACKEND_URL in frontend/config.js after deploying the Apps Script backend.'));
-        }
+      return new Promise(function(resolve, reject) {
+        var id = 'req_' + Date.now() + '_' + Math.round(Math.random() * 1000000);
+        var frameName = 'swish_api_' + id;
+        var iframe = document.createElement('iframe');
+        var form = document.createElement('form');
+        var timeout;
 
-        if (readyPromise) return readyPromise;
+        iframe.name = frameName;
+        iframe.title = 'Swish Innovation API Response';
+        iframe.style.cssText = 'position:absolute;width:1px;height:1px;border:0;opacity:0;pointer-events:none;left:-9999px;top:-9999px;';
 
-        readyPromise = new Promise(function(resolve, reject) {
-          readyResolve = resolve;
-          readyReject = reject;
-          iframe = document.createElement('iframe');
-          iframe.src = url;
-          iframe.title = 'Swish Innovation API Bridge';
-          iframe.style.cssText = 'position:absolute;width:1px;height:1px;border:0;opacity:0;pointer-events:none;left:-9999px;top:-9999px;';
-          document.body.appendChild(iframe);
+        form.method = 'POST';
+        form.action = backendUrl;
+        form.target = frameName;
+        form.style.display = 'none';
 
+        addHidden(form, 'id', id);
+        addHidden(form, 'method', method);
+        addHidden(form, 'args', JSON.stringify(args || []));
+        addHidden(form, 'origin', window.location.origin);
+
+        function cleanup() {
+          window.clearTimeout(timeout);
+          window.removeEventListener('message', onMessage);
+          if (form.parentNode) form.parentNode.removeChild(form);
           window.setTimeout(function() {
-            if (readyReject) {
-              readyReject(new Error('Could not connect to the Apps Script backend. Check the Web App URL and deployment access.'));
-              readyReject = null;
-            }
-          }, 15000);
-        });
-
-        return readyPromise;
-      }
-
-      window.addEventListener('message', function(event) {
-        if (!iframe || event.source !== iframe.contentWindow) return;
-        var message = event.data || {};
-        if (!message.swishBridge) return;
-
-        if (message.ready && readyResolve) {
-          readyResolve(true);
-          readyResolve = null;
-          readyReject = null;
-          return;
+            if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+          }, 500);
         }
 
-        var request = pending[message.id];
-        if (!request) return;
-        delete pending[message.id];
-
-        if (message.ok) {
-          request.resolve(message.result);
-        } else {
-          request.reject(new Error(message.error || 'Backend request failed.'));
+        function onMessage(event) {
+          var message = event.data || {};
+          if (!message.swishApi || message.id !== id) return;
+          cleanup();
+          if (message.ok) {
+            resolve(message.result);
+          } else {
+            reject(new Error(message.error || 'Backend request failed.'));
+          }
         }
+
+        timeout = window.setTimeout(function() {
+          cleanup();
+          reject(new Error('Backend request timed out. Check the Apps Script Web App deployment and redeploy the latest Code.gs.'));
+        }, 30000);
+
+        window.addEventListener('message', onMessage);
+        document.body.appendChild(iframe);
+        document.body.appendChild(form);
+        form.submit();
       });
+    }
 
-      return {
-        call: function(method, args) {
-          return ensureReady().then(function() {
-            return new Promise(function(resolve, reject) {
-              var id = 'req_' + Date.now() + '_' + (++counter);
-              pending[id] = { resolve: resolve, reject: reject };
-              iframe.contentWindow.postMessage({
-                swishBridge: true,
-                id: id,
-                method: method,
-                args: args || []
-              }, '*');
-
-              window.setTimeout(function() {
-                if (!pending[id]) return;
-                delete pending[id];
-                reject(new Error('Backend request timed out.'));
-              }, 30000);
-            });
-          });
-        }
-      };
+    function addHidden(form, name, value) {
+      var input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
     }
 
     function init() {
